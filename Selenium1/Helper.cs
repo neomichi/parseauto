@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Selenium1
 {
     public class Helper
     {
-        public static List<string> GetPageLinks(HtmlAgilityPack.HtmlDocument doc) 
+        static List<string> GetPageLinks(HtmlAgilityPack.HtmlDocument doc) 
         {    
             return doc.DocumentNode.SelectNodes("//a")
                 .Where(x => x.Attributes.Contains("href") &&
@@ -48,5 +49,21 @@ namespace Selenium1
             document.LoadHtml(html);
             return document;
         }
+
+        public static void ParseAndSaveCarLinks(string path,string fileExp, HtmlAgilityPack.HtmlDocument document, int page)
+        {            
+            var links = GetPageLinks(document);
+
+            var filename=string.Format("{0}{1}{2}", path,page,fileExp);
+
+            System.IO.File.WriteAllLines(filename, links);
+        }
+
+        public static bool CheckHtmlStopWord(string row, string html)
+        {
+            return row.IndexOf(row) > -1;
+        }
+
+
     }
 }

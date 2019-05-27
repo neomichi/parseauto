@@ -20,52 +20,56 @@ namespace Selenium1
     {
 
         IWebDriver driver;
-        string baseUrl;
-        int current = 17;
+        string basePageUrl;
+        int current = 1;
         int max;
+        string pathForPages = @"F:\auto\page";
+        string expForPages = ".txt";
+        string stopWord = "временно заблокировать доступ";
         public Form1()
         {
             InitializeComponent();
-            baseUrl = "https://auto.ru/rossiya/cars/all/?sort=fresh_relevance_1-desc&output_type=table&page=";
+            basePageUrl = "https://auto.ru/rossiya/cars/all/?sort=fresh_relevance_1-desc&output_type=table&page=";
+            СurrentNum.Text = current.ToString();
             max = current + 1;
         }
-
-       
-
-
-
-
-
 
         private void button1_Click(object sender, EventArgs e)
         {
             driver = new ChromeDriver(@"F:\web-driver\"); //&lt;-Add your path
-            
+
             start();
-            СurentNum.Enabled = false;
-            for (var i=current; i < max;i++) {
+            СurrentNum.Enabled = false;
+            for (var i = current; i < max; i++)
+            {
 
                 start();
             }
-            
+
         }
 
         void start()
-        {  
-            var url = baseUrl + current.ToString();
+        {
+            var url = basePageUrl + current.ToString();
             if (current >= max)
             {
-                driver.Close();
-                driver.Dispose();
+                StopBrowser();
                 return;
             }
 
             var html = GetPageHtml(url);
-            var document = Helper.GetDocument(html);
-            SaveLink(document, current);
-
-            current = GetNextPage(document) + 1;
-            max = GetMaxPage(document);
+            if (Helper.CheckHtmlStopWord(stopWord, html))
+            {
+                //need proxy and re run;
+                html = GetPageHtml(url);
+            }
+            else
+            {
+                var document = Helper.GetDocument(html);
+                Helper.ParseAndSaveCarLinks(pathForPages, expForPages, document, current);
+                current = Helper.GetCurrentPageNum(document) + 1;
+                max = Helper.GetMaxPageNum(document);
+            }
             return;
         }
 
@@ -74,45 +78,26 @@ namespace Selenium1
 
         private string GetPageHtml(string url)
         {
+            Thread.Sleep(new Random().Next(500, 3000));
             driver.Navigate().GoToUrl(url);
             var js = (IJavaScriptExecutor)driver;
             js.ExecuteScript("window.scrollTo(0, document.body.scrollHeight)");
             Thread.Sleep(new Random().Next(150, 500));
-            var html= driver.PageSource;
-            Thread.Sleep(new Random().Next(500, 3000));
-
-            return html;
+            return driver.PageSource;
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void TestButton_Click(object sender, EventArgs e)
         {
-          var html=  System.IO.File.ReadAllText(@"F:\auto\test.html");
-           
-            GetMaxPage(Helper.GetDocument(html));
+            var html = System.IO.File.ReadAllText(@"F:\auto\error.html");
+            var gg = Helper.CheckHtmlStopWord(stopWord, html);
+
+            MessageBox.Show(gg.ToString());
         }
 
-        int GetNextPage(HtmlAgilityPack.HtmlDocument document)
+        private void StopBrowserButton_Click(object sender, EventArgs e)
         {
-            return Helper.GetCurrentPageNum(document);             
-        }
-        void SaveLink(HtmlAgilityPack.HtmlDocument document,int page)
-        {       
+            StopBrowser();
 
-            var links = Helper.GetPageLinks(document);         
-
-            System.IO.File.WriteAllLines(@"F:\auto\test"+page.ToString()+ ".html", links);           
-           
-        }
-        int GetMaxPage(HtmlAgilityPack.HtmlDocument document)
-        {
-            return Helper.GetMaxPageNum(document);         
-
-        }
-
-        private void button3_Click(object sender, EventArgs e)
-        {
-            driver.Close();
-            driver.Dispose();
         }
 
         private void СurentNum_KeyPress(object sender, KeyPressEventArgs e)
@@ -123,6 +108,20 @@ namespace Selenium1
         private void СurentNum_TextChanged(object sender, EventArgs e)
         {
             current = int.Parse(((TextBox)sender).Text);
+        }
+
+
+
+        private void StopBrowser()
+        {
+            driver.Quit();
+            driver.Close();
+            driver.Dispose();
+        }
+
+        private void parseCar_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
