@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using HtmlAgilityPack;
@@ -17,68 +18,95 @@ namespace Selenium1
 {
     public partial class Form1 : Form
     {
+
+        IWebDriver driver;
+        string baseUrl;
+        int current = 17;
+        int max;
         public Form1()
         {
             InitializeComponent();
+            baseUrl = "https://auto.ru/rossiya/cars/all/?sort=fresh_relevance_1-desc&output_type=table&page=";
+            max = current + 1;
         }
+       
+
 
         private void button1_Click(object sender, EventArgs e)
         {
-            IWebDriver driver = new ChromeDriver(@"F:\web-driver\"); //&lt;-Add your path
-            driver.Navigate().GoToUrl("https://auto.ru/rossiya/cars/all/?sort=fresh_relevance_1-desc&output_type=table&page=11");
-            var js = (IJavaScriptExecutor)driver;            
-            js.ExecuteScript("window.scrollTo(0, document.body.scrollHeight)");
-           
-            var html = driver.PageSource;
+            driver = new ChromeDriver(@"F:\web-driver\"); //&lt;-Add your path
+
+            start();
+
+            for (var i=1; i < max;i++) {
+                start();
+            }
             
+        }
 
-            HtmlAgilityPack.HtmlDocument document = new HtmlAgilityPack.HtmlDocument();
-            document.LoadHtml(html);
-
-            var current= GetNextPage(document);
-            var max = GetMaxPage(document);
-            if (max>current)
+        void start()
+        {  
+            var url = baseUrl + current.ToString();
+            if (current >= max)
             {
-                ///next
+                driver.Close();
+                driver.Dispose();
+                return;
             }
 
-            FillList(document, current);
+            var html = GetPageHtml(url);
+            var document = Helper.GetDocument(html);
+            SaveLink(document, current);
 
-            var url = "https://auto.ru/rossiya/cars/all/?sort=fresh_relevance_1-desc&output_type=table&page=" + (current+1).ToString();
-            
+            current = GetNextPage(document) + 1;
+            max = GetMaxPage(document);
+            return;
+        }
 
+
+
+
+        private string GetPageHtml(string url)
+        {
+            driver.Navigate().GoToUrl(url);
+            var js = (IJavaScriptExecutor)driver;
+            js.ExecuteScript("window.scrollTo(0, document.body.scrollHeight)");
+            Thread.Sleep(new Random().Next(150, 500));
+            var html= driver.PageSource;
+            Thread.Sleep(new Random().Next(500, 3000));
+
+            return html;
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
           var html=  System.IO.File.ReadAllText(@"F:\auto\test.html");
-            HtmlAgilityPack.HtmlDocument document = new HtmlAgilityPack.HtmlDocument();
-            document.LoadHtml(html);
-            GetMaxPage(document);
+           
+            GetMaxPage(Helper.GetDocument(html));
         }
 
-        private int GetNextPage(HtmlAgilityPack.HtmlDocument document)
+        int GetNextPage(HtmlAgilityPack.HtmlDocument document)
         {
-            return Helper.GetCurrentPageNum(document);
-             
+            return Helper.GetCurrentPageNum(document);             
         }
-
-
-        private  void FillList(HtmlAgilityPack.HtmlDocument document,int page)
+        void SaveLink(HtmlAgilityPack.HtmlDocument document,int page)
         {       
 
-            var links = Helper.GetPageLinks(document);          
+            var links = Helper.GetPageLinks(document);         
 
-            System.IO.File.WriteAllLines(@"F:\auto\test"+page.ToString()+ ".html", links);
-
-           
+            System.IO.File.WriteAllLines(@"F:\auto\test"+page.ToString()+ ".html", links);           
            
         }
-
-        private int GetMaxPage(HtmlAgilityPack.HtmlDocument document)
+        int GetMaxPage(HtmlAgilityPack.HtmlDocument document)
         {
             return Helper.GetMaxPageNum(document);         
 
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            driver.Close();
+            driver.Dispose();
         }
     }
 }

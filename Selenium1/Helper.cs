@@ -41,5 +41,12 @@ namespace Selenium1
                 
             return list.Max();
         }
+
+        public static HtmlAgilityPack.HtmlDocument GetDocument(string html)
+        {
+            HtmlAgilityPack.HtmlDocument document = new HtmlAgilityPack.HtmlDocument();
+            document.LoadHtml(html);
+            return document;
+        }
     }
 }
