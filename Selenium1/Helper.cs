@@ -12,31 +12,28 @@ namespace Selenium1
 {
     public class Helper
     {
-        static List<string> GetPageLinks(HtmlAgilityPack.HtmlDocument doc)
+        static List<string> GetPageLinks(HtmlDocument doc)
         {
-            return doc.DocumentNode.SelectNodes("//a")
-                .Where(x => x.Attributes.Contains("href") &&
-                 x.Attributes["href"].Value.Contains("cars/used/sale/"))
+            return GetTaginHtmlNodes(doc.DocumentNode
+                .SelectNodes("//a"), "href", "cars/used/sale/")                
                  .Select(x => x.Attributes["href"].Value)
-                 .ToList();
+                 .ToList();           
+
         }
 
-        public static int GetCurrentPageNum(HtmlAgilityPack.HtmlDocument doc)
+        public static int GetCurrentPageNum(HtmlDocument doc)
         {
-            var span = doc.DocumentNode.SelectNodes("//span").First(x =>
-             x.Attributes.Contains("class") &&
-             x.Attributes["class"].Value.Contains("ListingPagination-module__pages"));
+            var span = GetTaginHtmlNodes(doc.DocumentNode.SelectNodes("//span"), "class", "ListingPagination-module__pages")
+                .FirstOrDefault();
 
             var val = span.SelectNodes("a").First(x => !x.Attributes.Contains("href")).InnerText;
             return int.Parse(val.Trim());
         }
 
-        public static int GetMaxPageNum(HtmlAgilityPack.HtmlDocument doc)
+        public static int GetMaxPageNum(HtmlDocument doc)
         {
-            var span = doc.DocumentNode.SelectNodes("//span").First(x =>
-             x.Attributes.Contains("class") &&
-             x.Attributes["class"].Value.Contains("ListingPagination-module__pages"));
-
+            var span = GetTaginHtmlNodes(doc.DocumentNode.SelectNodes("//span"), "class", "ListingPagination-module__pages").First();
+             
             var list = span.SelectNodes("a")
                 .Where(x => x.Attributes.Contains("href") &&
                 x.InnerText != "…").Select(x => int.Parse(x.InnerText)).ToList();
@@ -44,14 +41,14 @@ namespace Selenium1
             return list.Max();
         }
 
-        public static HtmlAgilityPack.HtmlDocument GetDocument(string html)
+        public static HtmlDocument GetDocument(string html)
         {
-            HtmlAgilityPack.HtmlDocument document = new HtmlAgilityPack.HtmlDocument();
+            HtmlDocument document = new HtmlDocument();
             document.LoadHtml(html);
             return document;
         }
 
-        public static void ParseAndSaveCarLinks(string path, string fileExp, HtmlAgilityPack.HtmlDocument document, int page)
+        public static void ParseAndSaveCarLinks(string path, string fileExp, HtmlDocument document, int page)
         {
             var links = GetPageLinks(document);
 
@@ -72,16 +69,16 @@ namespace Selenium1
         }
 
 
-        public static CarModel GetCarModel(HtmlAgilityPack.HtmlDocument document)
+        public static CarModel GetCarModel(HtmlDocument document)
         {
             var cm = new CarModel();
 
             var allDiv = document.DocumentNode.SelectNodes("//div");
 
-            cm.Title = GetClassinHtmlNodes(allDiv, "CardHead-module__title").First().InnerText;
+            cm.Title = GetTaginHtmlNodes(allDiv, "CardHead-module__title", "class").First().InnerText;
 
 
-            var divList = GetClassinHtmlNodes(allDiv, "CardInfo-module__CardInfo").ToList();
+            var divList = GetTaginHtmlNodes(allDiv, "CardInfo-module__CardInfo","class").ToList();
 
             var list = divList.ToList()
                 .SelectMany(x => x.ChildNodes)
@@ -98,25 +95,14 @@ namespace Selenium1
             cm.DriveUnit = parameters.FirstOrDefault(x => x[0].Equals("Привод", StringComparison.OrdinalIgnoreCase))?[1] ?? "";
             cm.SteeringWheel= parameters.FirstOrDefault(x => x[0].Equals("Руль", StringComparison.OrdinalIgnoreCase))?[1] ?? "";
             cm.Condition= parameters.FirstOrDefault(x => x[0].Equals("Состояние", StringComparison.OrdinalIgnoreCase))?[1] ?? "";
-
-
-
-
-            //"CardInfo-module__CardInfo__cell"
-            //"CardInfo-module__CardInfo__cell CardInfo-module__CardInfo__cell_right"
-
-            //"CardInfo-module__CardInfo__row"
-
-
-
-
+                                                      
             return cm;
         }
-
-        public static List<HtmlNode> GetClassinHtmlNodes(HtmlNodeCollection htmlNode, string classAttribute)
+        
+        public static List<HtmlNode> GetTaginHtmlNodes(HtmlNodeCollection htmlNode,string tag, string attribute)
         {
-            return htmlNode.Where(x => x.Attributes.Contains("class")
-               && x.Attributes["class"].Value.Contains(classAttribute) ).ToList();
+            return htmlNode.Where(x => x.Attributes.Contains(tag)
+               && x.Attributes[tag].Value.Contains(attribute)).ToList();
 
         }
 
@@ -129,16 +115,5 @@ namespace Selenium1
 
             return list;
         }
-
-        public static string GetNameAttribute<T>()
-        {
-            MemberInfo property = typeof(T).GetProperty("Name");
-            var attribute = property.GetCustomAttributes(typeof(DisplayNameAttribute), true)
-                .Cast<DisplayNameAttribute>().Single();
-            return attribute.DisplayName;
-        }
-
-        
-
     }
 }
