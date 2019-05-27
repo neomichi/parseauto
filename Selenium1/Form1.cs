@@ -29,16 +29,22 @@ namespace Selenium1
             baseUrl = "https://auto.ru/rossiya/cars/all/?sort=fresh_relevance_1-desc&output_type=table&page=";
             max = current + 1;
         }
+
        
+
+
+
+
 
 
         private void button1_Click(object sender, EventArgs e)
         {
             driver = new ChromeDriver(@"F:\web-driver\"); //&lt;-Add your path
-
+            
             start();
+            СurentNum.Enabled = false;
+            for (var i=current; i < max;i++) {
 
-            for (var i=1; i < max;i++) {
                 start();
             }
             
@@ -107,6 +113,16 @@ namespace Selenium1
         {
             driver.Close();
             driver.Dispose();
+        }
+
+        private void СurentNum_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            e.Handled = !char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar);
+        }
+
+        private void СurentNum_TextChanged(object sender, EventArgs e)
+        {
+            current = int.Parse(((TextBox)sender).Text);
         }
     }
 }
