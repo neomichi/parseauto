@@ -59,11 +59,16 @@ namespace Selenium1
             System.IO.File.WriteAllLines(filename, links);
         }
 
-        public static bool CheckHtmlStopWord(string row, string html)
+        public static bool CheckingWordinHtml(string row, string html)
         {
-            return row.IndexOf(row) > -1;
+            return html.IndexOf(row,StringComparison.OrdinalIgnoreCase) > -1;
         }
 
+        public static string ToUtf(string value)
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(value);
+            return Encoding.UTF8.GetString(bytes);
+        }
 
     }
 }

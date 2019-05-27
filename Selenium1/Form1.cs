@@ -21,44 +21,53 @@ namespace Selenium1
 
         IWebDriver driver;
         string basePageUrl;
-        int current = 1;
+        int currentPage;
         int max;
-        string pathForPages = @"F:\auto\page";
-        string expForPages = ".txt";
-        string stopWord = "временно заблокировать доступ";
+        string pathForPages;
+        string expForPages;
+        string stopWord; 
+        string containsWord;
+        string chromeDriverPach;
         public Form1()
         {
             InitializeComponent();
-            basePageUrl = "https://auto.ru/rossiya/cars/all/?sort=fresh_relevance_1-desc&output_type=table&page=";
-            СurrentNum.Text = current.ToString();
-            max = current + 1;
+            currentPage = 1;
+            pathForPages = @"F:\auto\page";
+            expForPages = ".txt";
+            stopWord = "временно заблокировать доступ";
+            containsWord = "Легковые автомобили";
+            basePageUrl = "https://auto.ru/rossiya/cars/all/?sort=fresh_relevance_1-desc&output_type=table&page=";            
+            max = currentPage + 1;
+            chromeDriverPach = @"F:\web-driver\";
+            ///initUi
+            СurrentNum.Text = currentPage.ToString();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void ParsePageButtom_Click(object sender, EventArgs e)
         {
-            driver = new ChromeDriver(@"F:\web-driver\"); //&lt;-Add your path
-
+            driver = new ChromeDriver(chromeDriverPach); //&lt;-Add your path
+            
             start();
             СurrentNum.Enabled = false;
-            for (var i = current; i < max; i++)
-            {
-
-                start();
-            }
-
+            //for (var i = currentPage; i < max; i++)
+            //{
+            //    start();
+            //}
+            СurrentNum.Enabled = true;
+            StopBrowser();
         }
 
         void start()
         {
-            var url = basePageUrl + current.ToString();
-            if (current >= max)
+            var url = basePageUrl + currentPage.ToString();
+            if (currentPage >= max)
             {
                 StopBrowser();
                 return;
             }
 
             var html = GetPageHtml(url);
-            if (Helper.CheckHtmlStopWord(stopWord, html))
+            if (Helper.CheckingWordinHtml(stopWord, html) && !Helper.CheckingWordinHtml(containsWord,html))
             {
                 //need proxy and re run;
                 html = GetPageHtml(url);
@@ -66,8 +75,8 @@ namespace Selenium1
             else
             {
                 var document = Helper.GetDocument(html);
-                Helper.ParseAndSaveCarLinks(pathForPages, expForPages, document, current);
-                current = Helper.GetCurrentPageNum(document) + 1;
+                Helper.ParseAndSaveCarLinks(pathForPages, expForPages, document, currentPage);
+                currentPage = Helper.GetCurrentPageNum(document) + 1;
                 max = Helper.GetMaxPageNum(document);
             }
             return;
@@ -78,19 +87,21 @@ namespace Selenium1
 
         private string GetPageHtml(string url)
         {
-            Thread.Sleep(new Random().Next(500, 3000));
+            Thread.Sleep(new Random().Next(900, 3000));
             driver.Navigate().GoToUrl(url);
+            var cc=driver.Manage().Cookies;
             var js = (IJavaScriptExecutor)driver;
             js.ExecuteScript("window.scrollTo(0, document.body.scrollHeight)");
             Thread.Sleep(new Random().Next(150, 500));
-            return driver.PageSource;
+            return Helper.ToUtf(driver.PageSource);
         }
 
         private void TestButton_Click(object sender, EventArgs e)
         {
-            var html = System.IO.File.ReadAllText(@"F:\auto\error.html");
-            var gg = Helper.CheckHtmlStopWord(stopWord, html);
+            var html = System.IO.File.ReadAllText(@"F:\auto\123.txt",Encoding.UTF8);
 
+            
+                        var gg = Helper.CheckingWordinHtml(stopWord, html);
             MessageBox.Show(gg.ToString());
         }
 
@@ -107,7 +118,7 @@ namespace Selenium1
 
         private void СurentNum_TextChanged(object sender, EventArgs e)
         {
-            current = int.Parse(((TextBox)sender).Text);
+            currentPage = int.Parse(((TextBox)sender).Text);
         }
 
 
@@ -115,7 +126,7 @@ namespace Selenium1
         private void StopBrowser()
         {
             driver.Quit();
-            driver.Close();
+            
             driver.Dispose();
         }
 
