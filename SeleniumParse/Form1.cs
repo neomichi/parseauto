@@ -14,7 +14,7 @@ using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Firefox;
 using ServiceStack;
 
-namespace Selenium1
+namespace SeleniumParse
 {
     public partial class Form1 : Form
     {

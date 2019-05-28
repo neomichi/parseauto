@@ -1,4 +1,4 @@
-﻿namespace Selenium1
+﻿namespace SeleniumParse
 {
     partial class Form1
     {

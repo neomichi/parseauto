@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 
-namespace Selenium1
+namespace SeleniumParse
 {
     public class Helper
     {
@@ -100,24 +100,26 @@ namespace Selenium1
         }
         
 
-        public static void GetPhoto(string html)
+        public static List<string> GetPhoto(string html)
         {
-            //var allImg= document.DocumentNode.SelectNodes("//img");
-            //var tagValue = "//avatars.mds.yandex.net/get-autoru-all/";
-            //var imgs = FindTagsinHtmlNodes(allImg, "scr", tagValue).ToList();
-            var pattern = "src\\s*=\\s*\"(.+?)\"";
-           var listImg= Regex.Matches(html, pattern).Cast<Match>().Select(match => match.Groups[1].Value)
-                .Where(x=>x.Contains("1200x900"))           
-                .ToList();
-
-
-
            
+            var result =new List<string>();
+            try
+            {
+                
+                result = Regex.Matches(html, RegexPatternScr)
+                     .Cast<Match>().Select(match => match.Groups[1].Value)
+                     .Where(x => x.Contains("1200x900"))
+                     .ToList();
 
+            } catch
+            {
 
+            }
 
-
+            return result;
         }
+            
 
 
 
@@ -143,5 +145,7 @@ namespace Selenium1
 
         //    return list;
         //}
+
+        public const string RegexPatternScr = "src\\s*=\\s*\"(.+?)\"";
     }
 }

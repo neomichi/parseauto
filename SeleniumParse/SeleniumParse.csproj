@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{D0A3DB4B-2A75-497F-A9D8-A8F3EDA5D1B0}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>Selenium1</RootNamespace>
-    <AssemblyName>Selenium1</AssemblyName>
+    <RootNamespace>SeleniumParse</RootNamespace>
+    <AssemblyName>SeleniumParse</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
