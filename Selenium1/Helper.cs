@@ -14,7 +14,7 @@ namespace Selenium1
     {
         static List<string> GetPageLinks(HtmlDocument doc)
         {
-            return GetTaginHtmlNodes(doc.DocumentNode
+            return FindTagsinHtmlNodes(doc.DocumentNode
                 .SelectNodes("//a"), "href", "cars/used/sale/")                
                  .Select(x => x.Attributes["href"].Value)
                  .ToList();           
@@ -23,7 +23,7 @@ namespace Selenium1
 
         public static int GetCurrentPageNum(HtmlDocument doc)
         {
-            var span = GetTaginHtmlNodes(doc.DocumentNode.SelectNodes("//span"), "class", "ListingPagination-module__pages")
+            var span = FindTagsinHtmlNodes(doc.DocumentNode.SelectNodes("//span"), "class", "ListingPagination-module__pages")
                 .FirstOrDefault();
 
             var val = span.SelectNodes("a").First(x => !x.Attributes.Contains("href")).InnerText;
@@ -32,7 +32,7 @@ namespace Selenium1
 
         public static int GetMaxPageNum(HtmlDocument doc)
         {
-            var span = GetTaginHtmlNodes(doc.DocumentNode.SelectNodes("//span"), "class", "ListingPagination-module__pages").First();
+            var span = FindTagsinHtmlNodes(doc.DocumentNode.SelectNodes("//span"), "class", "ListingPagination-module__pages").First();
              
             var list = span.SelectNodes("a")
                 .Where(x => x.Attributes.Contains("href") &&
@@ -75,10 +75,10 @@ namespace Selenium1
 
             var allDiv = document.DocumentNode.SelectNodes("//div");
 
-            cm.Title = GetTaginHtmlNodes(allDiv, "CardHead-module__title", "class").First().InnerText;
+            cm.Title = FindTagsinHtmlNodes(allDiv, "class", "CardHead-module__title").First().InnerText;
 
 
-            var divList = GetTaginHtmlNodes(allDiv, "CardInfo-module__CardInfo","class").ToList();
+            var divList = FindTagsinHtmlNodes(allDiv, "class", "CardInfo-module__CardInfo").ToList();
 
             var list = divList.ToList()
                 .SelectMany(x => x.ChildNodes)
@@ -99,21 +99,49 @@ namespace Selenium1
             return cm;
         }
         
-        public static List<HtmlNode> GetTaginHtmlNodes(HtmlNodeCollection htmlNode,string tag, string attribute)
+
+        public static void GetPhoto(string html)
         {
-            return htmlNode.Where(x => x.Attributes.Contains(tag)
-               && x.Attributes[tag].Value.Contains(attribute)).ToList();
+            //var allImg= document.DocumentNode.SelectNodes("//img");
+            //var tagValue = "//avatars.mds.yandex.net/get-autoru-all/";
+            //var imgs = FindTagsinHtmlNodes(allImg, "scr", tagValue).ToList();
+            var pattern = "src\\s*=\\s*\"(.+?)\"";
+           var listImg= Regex.Matches(html, pattern).Cast<Match>().Select(match => match.Groups[1].Value)
+                .Where(x=>x.Contains("1200x900"))           
+                .ToList();
+
+
+
+           
+
+
+
 
         }
 
-        public static List<HtmlNode> GetClassinHtmlNodes(HtmlNodeCollection htmlNode, List<string> classAttributes)
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="htmlNode">HtmlNode</param>
+        /// <param name="tagName">"class" "href"</param>
+        /// <param name="selector">"text"</param>
+        /// <returns></returns>
+        public static List<HtmlNode> FindTagsinHtmlNodes(HtmlNodeCollection htmlNode,string tagName, string selector)
         {
-            var list = new List<HtmlNode>();
-
-            list= htmlNode.Where(x => x.Attributes.Contains("class")
-               && classAttributes.Contains(x.Attributes["class"].Value)).ToList();
-
-            return list;
+            return htmlNode.Where(x => x.Attributes.Contains(tagName)
+               && x.Attributes[tagName].Value.Contains(selector)).ToList();
         }
+
+        //public static List<HtmlNode> GetClassinHtmlNodes(HtmlNodeCollection htmlNode, List<string> classAttributes)
+        //{
+        //    var list = new List<HtmlNode>();
+
+        //    list= htmlNode.Where(x => x.Attributes.Contains("class")
+        //       && classAttributes.Contains(x.Attributes["class"].Value)).ToList();
+
+        //    return list;
+        //}
     }
 }

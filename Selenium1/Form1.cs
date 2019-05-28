@@ -98,9 +98,9 @@ namespace Selenium1
 
         private void TestButton_Click(object sender, EventArgs e)
         {
-            var html = System.IO.File.ReadAllText(@"F:\auto\car.html", Encoding.UTF8);
+            var html = System.IO.File.ReadAllText(@"F:\auto\car3.htm", Encoding.UTF8);
             var document = Helper.GetDocument(html);
-            Helper.GetCarModel(document);
+            Helper.GetPhoto(html);
                         //var gg = Helper.CheckingWordinHtml(stopWord, html);
             //MessageBox.Show(gg.ToString());
         }
